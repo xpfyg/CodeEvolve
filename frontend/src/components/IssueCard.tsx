@@ -1,182 +1,211 @@
 import React, { useState } from 'react';
-import { Issue } from '../types/index';
+import { useAppStore, Issue } from '../store';
+import apiService from '../api';
 
 interface IssueCardProps {
   issue: Issue;
-  onCreateBranch: (id: number) => Promise<void>;
-  onCreatePR: (id: number) => Promise<void>;
-  onMergePR: (id: number) => Promise<void>;
-  onGetPreview: (id: number) => Promise<void>;
 }
 
-const IssueCard: React.FC<IssueCardProps> = ({
-  issue,
-  onCreateBranch,
-  onCreatePR,
-  onMergePR,
-  onGetPreview,
-}) => {
-  const [loading, setLoading] = useState<{
-    branch: boolean;
-    pr: boolean;
-    merge: boolean;
-    preview: boolean;
-  }>({
-    branch: false,
-    pr: false,
-    merge: false,
-    preview: false,
-  });
+const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
+  const {
+    repoPath,
+    updateIssue,
+    isGeneratingCode,
+    currentGeneratingIssueId,
+    setGeneratingCode
+  } = useAppStore();
 
-  const handleAction = async (
-    action: () => Promise<void>,
-    type: 'branch' | 'pr' | 'merge' | 'preview'
-  ) => {
-    setLoading(prev => ({ ...prev, [type]: true }));
-    try {
-      await action();
-    } catch (error) {
-      console.error(`Failed to ${type}:`, error);
-      alert(`操作失败，请重试`);
-    } finally {
-      setLoading(prev => ({ ...prev, [type]: false }));
-    }
-  };
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status: Issue['status']) => {
+    switch (status) {
       case 'open':
-        return 'bg-green-100 text-green-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'closed':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-green-100 text-green-800 border-green-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getPRStatusColor = (prStatus?: string) => {
-    if (!prStatus) return 'bg-gray-100 text-gray-800';
-    switch (prStatus.toLowerCase()) {
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'open':
-        return 'bg-green-100 text-green-800';
-      case 'merged':
-        return 'bg-purple-100 text-purple-800';
-      case 'closed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const getStatusText = (status: Issue['status']) => {
+    switch (status) {
+      case 'open': return '待处理';
+      case 'in_progress': return '进行中';
+      case 'completed': return '已完成';
+      default: return '未知';
     }
+  };
+
+  const getStatusIcon = (status: Issue['status']) => {
+    switch (status) {
+      case 'open': return '📋';
+      case 'in_progress': return '⚡';
+      case 'completed': return '✅';
+      default: return '❓';
+    }
+  };
+
+  const isCurrentlyGenerating = isGeneratingCode && currentGeneratingIssueId === issue.id;
+  const canStartCoding = issue.status === 'open' && !isGeneratingCode;
+
+  const handleStartCoding = async () => {
+    if (!repoPath) {
+      console.error('No repository path available');
+      return;
+    }
+
+    setGeneratingCode(true, issue.id);
+    updateIssue(issue.id, { status: 'in_progress' });
+
+    try {
+      const result = await apiService.startCoding({
+        issueId: issue.id,
+        requirement: issue.description,
+        repoPath: repoPath,
+        branchName: `feature/issue-${issue.id}`,
+      });
+
+      if (result.success) {
+        updateIssue(issue.id, {
+          status: 'completed',
+          branch_name: result.branch_name,
+        });
+      } else {
+        updateIssue(issue.id, { status: 'open' });
+      }
+    } catch (error) {
+      console.error('Failed to start coding:', error);
+      updateIssue(issue.id, { status: 'open' });
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const truncateDescription = (text: string, maxLength: number = 120) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 p-6">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium text-gray-500">#{issue.id}</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status)}`}>
-              {issue.status}
-            </span>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+            {issue.title}
+          </h3>
+          <div className="flex items-center space-x-3 text-sm text-gray-500">
+            <span>#{issue.id}</span>
+            {issue.created_at && (
+              <span>{formatDate(issue.created_at)}</span>
+            )}
+            {issue.branch_name && (
+              <span className="flex items-center">
+                <span className="mr-1">🌿</span>
+                {issue.branch_name}
+              </span>
+            )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{issue.title}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2">{issue.description}</p>
+        </div>
+
+        {/* Status Badge */}
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(issue.status)}`}>
+          <span className="mr-1">{getStatusIcon(issue.status)}</span>
+          {getStatusText(issue.status)}
+        </span>
+      </div>
+
+      {/* Description */}
+      <div className="mb-4">
+        <p className="text-gray-700 text-sm leading-relaxed">
+          {showFullDescription ? issue.description : truncateDescription(issue.description)}
+        </p>
+        {issue.description.length > 120 && (
+          <button
+            onClick={() => setShowFullDescription(!showFullDescription)}
+            className="text-blue-600 hover:text-blue-700 text-xs mt-1 font-medium"
+          >
+            {showFullDescription ? '收起' : '展开更多'}
+          </button>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center space-x-2">
+          {issue.status === 'completed' && issue.branch_name && (
+            <div className="flex items-center text-green-600 text-sm">
+              <span className="mr-1">🎉</span>
+              <span className="font-medium">代码已生成</span>
+            </div>
+          )}
+          {issue.status === 'in_progress' && !isCurrentlyGenerating && (
+            <div className="flex items-center text-yellow-600 text-sm">
+              <span className="mr-1">⚡</span>
+              <span className="font-medium">开发中</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {canStartCoding && (
+            <button
+              onClick={handleStartCoding}
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200"
+            >
+              <span className="mr-2">🚀</span>
+              开始编码
+            </button>
+          )}
+
+          {isCurrentlyGenerating && (
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              生成代码中...
+            </div>
+          )}
+
+          {issue.status === 'completed' && (
+            <button
+              disabled
+              className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed"
+            >
+              <span className="mr-2">✅</span>
+              已完成
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Branch 和 PR 信息 */}
-      <div className="mb-4 space-y-2">
-        {issue.branch_name && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">分支:</span>
-            <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-              {issue.branch_name}
-            </span>
+      {/* Progress Indicator for In Progress Issues */}
+      {isCurrentlyGenerating && (
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center text-blue-700 text-sm">
+            <div className="animate-pulse flex items-center">
+              <span className="mr-2">🤖</span>
+              <span className="font-medium">AI 正在为您生成代码...</span>
+            </div>
           </div>
-        )}
-
-        {issue.pr_status && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">PR状态:</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPRStatusColor(issue.pr_status)}`}>
-              {issue.pr_status}
-            </span>
+          <div className="mt-2 bg-blue-200 rounded-full h-1">
+            <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{ width: '60%' }}></div>
           </div>
-        )}
-
-        {issue.preview_url && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">预览:</span>
-            <a
-              href={issue.preview_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-sm underline"
-            >
-              查看预览
-            </a>
-          </div>
-        )}
-
-        {issue.pr_url && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">PR链接:</span>
-            <a
-              href={issue.pr_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-sm underline"
-            >
-              查看PR
-            </a>
-          </div>
-        )}
-      </div>
-
-      {/* 操作按钮 */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => handleAction(() => onCreateBranch(issue.id), 'branch')}
-          disabled={loading.branch || !!issue.branch_name}
-          className="px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading.branch ? '创建中...' : issue.branch_name ? '已创建分支' : '创建分支'}
-        </button>
-
-        <button
-          onClick={() => handleAction(() => onGetPreview(issue.id), 'preview')}
-          disabled={loading.preview}
-          className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading.preview ? '获取中...' : '预览'}
-        </button>
-
-        <button
-          onClick={() => handleAction(() => onCreatePR(issue.id), 'pr')}
-          disabled={loading.pr || !issue.branch_name || issue.pr_status === 'merged'}
-          className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading.pr ? '提交中...' : issue.pr_status ? '已提交PR' : '提交PR'}
-        </button>
-
-        <button
-          onClick={() => handleAction(() => onMergePR(issue.id), 'merge')}
-          disabled={
-            loading.merge ||
-            !issue.pr_status ||
-            issue.pr_status === 'merged' ||
-            issue.pr_status === 'closed'
-          }
-          className="px-3 py-1 bg-purple-500 text-white text-sm rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading.merge ? '合并中...' : issue.pr_status === 'merged' ? '已合并' : '合并'}
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

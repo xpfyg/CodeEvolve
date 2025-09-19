@@ -40,9 +40,12 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">AI 代码生成</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <span className="text-3xl mr-3">🚀</span>
+        AI 代码生成
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="requirement" className="block text-sm font-medium text-gray-700 mb-2">
             需求描述 <span className="text-red-500">*</span>
@@ -53,7 +56,7 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
             onChange={(e) => setRequirement(e.target.value)}
             placeholder="请详细描述您要实现的功能，例如：添加用户认证功能，包括登录和注册接口"
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
             disabled={loading}
           />
         </div>
@@ -68,7 +71,7 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
             value={repoPath}
             onChange={(e) => setRepoPath(e.target.value)}
             placeholder="/path/to/your/project"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             disabled={loading}
           />
         </div>
@@ -83,7 +86,7 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
             value={targetFiles}
             onChange={(e) => setTargetFiles(e.target.value)}
             placeholder="src/auth.py, src/models/user.py (用逗号分隔)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             disabled={loading}
           />
           <p className="text-sm text-gray-500 mt-1">指定要修改的文件列表，留空则由 AI 自动判断</p>
@@ -99,7 +102,7 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
             value={branchName}
             onChange={(e) => setBranchName(e.target.value)}
             placeholder="feature-user-auth"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             disabled={loading}
           />
           <p className="text-sm text-gray-500 mt-1">留空则自动生成分支名称</p>
@@ -108,7 +111,7 @@ const CodeGenerationForm: React.FC<CodeGenerationFormProps> = ({ onSubmit, loadi
         <button
           type="submit"
           disabled={loading || !requirement.trim() || !repoPath.trim()}
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
         >
           {loading ? '生成中...' : '开始生成代码'}
         </button>
