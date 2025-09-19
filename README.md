@@ -1,145 +1,104 @@
-# CodeEvolve - 智能代码生成平台
+# CodeEvolve
 
-基于四层架构的智能代码生成平台，支持模板管理、AI定制和自动化部署。
+A powerful code evolution platform that combines AI-driven code generation with modern web technologies. This project aims to streamline the development process by providing intelligent code suggestions, automated refactoring, and collaborative features.
 
-## 🚀 项目特点
+## 🌟 Key Features
 
-- **🎯 四层解耦架构**: 前端、后端、AI、工具链各司其职，松耦合设计
-- **🤖 AI智能定制**: 支持自然语言描述需求，AI自动生成定制代码
-- **📦 丰富模板库**: 内置React、Vue、Golang、Java等多技术栈模板
-- **🔧 可视化配置**: 通过表单配置即可生成个性化项目代码
-- **⚡ 实时预览**: 在线预览生成效果，支持代码编辑和调试
-- **🛠 一站式工具链**: 集成测试、构建、部署全流程自动化
+- **AI-Powered Code Generation**: Leverage advanced language models to generate high-quality code snippets and complete functions
+- **User Authentication System** (New in `feature-user-auth`): 
+  - Secure user registration and login
+  - JWT-based authentication
+  - Role-based access control
+  - Password reset functionality
+- **Real-time Collaboration**: Work simultaneously with team members on code projects
+- **Code Analysis Tools**: Automated code review, syntax checking, and performance optimization suggestions
+- **Modern UI**: Responsive frontend built with React and Tailwind CSS
+- **Scalable Backend**: Robust architecture supporting multiple AI service integrations
 
-## 架构概览
+## 🚀 Getting Started
 
-```
-┌─────────────────────────┐  HTTP/WS  ┌─────────────────────────┐  gRPC/HTTP  ┌─────────────────────────┐
-│        前端层           │◄─────────►│        后端层           │◄─────────►│       AI能力层          │
-│  React + Ant Design Pro │           │        Golang (Gin)     │           │      FastAPI (Python)   │
-└─────────────────────────┘           └─────────────────────────┘           └─────────────────────────┘
-                                              ▲
-                                              │  API调用
-                                              ▼
-┌─────────────────────────┐           ┌─────────────────────────┐
-│       工具链层          │◄─────────►│        数据存储层        │
-│  测试/CI/CD/代码托管    │           │  MySQL + MinIO + Redis  │
-└─────────────────────────┘           └─────────────────────────┘
-```
+### Prerequisites
+- Node.js (v18+) and npm
+- Python (v3.10+) and pip
+- Git
 
-## 目录结构
+### Installation
 
-```
-CodeEvolve/
-├── frontend/              # 前端层 (React + Ant Design Pro)
-│   ├── src/pages/         # 页面组件 (模板管理、代码生成、AI定制等)
-│   ├── src/services/      # API请求封装
-│   └── .umirc.ts         # 配置文件
-├── backend/               # 后端层 (Golang + Gin)
-│   ├── cmd/api/           # 服务入口
-│   ├── internal/          # 内部业务逻辑
-│   │   ├── model/         # 数据模型
-│   │   ├── service/       # 业务服务
-│   │   ├── repo/          # 数据访问
-│   │   └── api/           # API处理器
-│   └── configs/           # 配置文件
-├── ai-service/            # AI能力层 (Python + FastAPI)
-│   ├── api/endpoints/     # API端点
-│   ├── core/              # 核心逻辑 (需求解析、代码生成、质量检查)
-│   └── models/            # 数据模型
-├── toolchain/             # 工具链层 (测试/CI/CD)
-├── docs/                  # 文档
-├── docker-compose.yml     # 本地开发环境
-└── QUICKSTART.md         # 快速启动指南
-```
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/codeevolve.git
+   cd codeevolve
+   ```
 
-## 🏁 快速开始
+2. Install frontend dependencies
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-详细启动指南请查看 [QUICKSTART.md](./QUICKSTART.md)
+3. Install AI service dependencies
+   ```bash
+   cd ../ai-service
+   pip install -r requirements.txt
+   ```
 
-### 一键启动开发环境
+### Running the Application
 
-```bash
-# 1. 启动基础服务
-docker-compose up -d mysql redis minio
+1. Start the frontend development server
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-# 2. 启动后端 (新终端)
-cd backend && go run cmd/api/main.go
+2. Start the AI service (in a separate terminal)
+   ```bash
+   cd ai-service
+   python app.py
+   ```
 
-# 3. 启动AI服务 (新终端)
-cd ai-service && pip install -r requirements.txt && python main.py
+3. Access the application
+   - Frontend: `http://localhost:5173`
+   - AI Service API: `http://localhost:5000`
 
-# 4. 启动前端 (新终端)
-cd frontend && npm install && npm start
-```
+## 🔐 User Authentication Usage
 
-### 访问地址
+With the new user authentication system, you can:
 
-- 🖥 **前端应用**: http://localhost:3000
-- 🔧 **后端API**: http://localhost:8080
-- 🤖 **AI服务**: http://localhost:8000
-- 📖 **API文档**: http://localhost:8080/swagger/index.html
-- 🗃 **MinIO控制台**: http://localhost:9001
+1. Register a new account:
+   - Navigate to `/register`
+   - Fill in your details and submit
+   - Verify your email (if enabled)
 
-## 核心功能
+2. Log in:
+   - Navigate to `/login`
+   - Enter your credentials
+   - Receive JWT token for authenticated requests
 
-### 🎨 模板管理
-- 支持React、Vue、Angular前端模板
-- 支持Golang、Java、Python后端模板
-- 可视化模板编辑和配置
-- 模板版本管理和分享
+3. Access protected routes:
+   - Authenticated users can access `/dashboard`
+   - Admin users have additional access to `/admin` panel
 
-### ⚙️ 代码生成
-- 基于模板快速生成项目脚手架
-- 支持自定义参数配置
-- 增量生成，避免覆盖用户修改
-- 多格式输出(ZIP、Git仓库)
-
-### 🧠 AI智能定制
-- 自然语言描述功能需求
-- AI自动解析并生成实现代码
-- 支持功能添加、性能优化、Bug修复
-- 代码质量检查和建议
-
-### 🔍 预览与测试
-- 在线代码预览和编辑
-- 自动化单元测试和E2E测试
-- 实时构建状态展示
-- 多环境部署支持
-
-## 🛠 技术栈
+## 📁 Project Structure
 
 
+## 🤝 Contributing
 
-### 后端层
-- **语言**: Golang 1.21
-- **框架**: Gin (HTTP路由) + GORM (ORM)
-- **数据库**: MySQL 8.0 + Redis 6.0
-- **存储**: MinIO (对象存储)
-- **认证**: JWT + 中间件
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
+Please make sure to update tests as appropriate and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## 📚 使用示例
+## 📄 License
 
-## 🤝 贡献指南
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+## 📧 Contact
 
-## 📄 许可证
-
-本项目基于 MIT 许可证开源 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 🔗 相关链接
-
-- [项目文档](./docs/)
-- [API文档](http://localhost:8080/swagger/index.html)
-- [AI服务文档](http://localhost:8000/docs)
-- [问题反馈](https://github.com/your-org/CodeEvolve/issues)
+For questions or feedback, please reach out to the team at contact@codeevolve.ai
 
 ---
 
-⭐ 如果这个项目对你有帮助，请给个Star支持一下！
+*Last updated: [Current Date]*
