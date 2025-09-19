@@ -109,11 +109,7 @@ cd frontend && npm install && npm start
 
 ## 🛠 技术栈
 
-### 前端层
-- **框架**: React 18 + Ant Design Pro V5 + TypeScript
-- **构建**: Umi 4 + Webpack
-- **编辑器**: CodeMirror (代码高亮、编辑)
-- **状态管理**: Umi内置Models
+
 
 ### 后端层
 - **语言**: Golang 1.21
@@ -122,47 +118,8 @@ cd frontend && npm install && npm start
 - **存储**: MinIO (对象存储)
 - **认证**: JWT + 中间件
 
-### AI能力层
-- **语言**: Python 3.9+
-- **框架**: FastAPI + Pydantic
-- **AI**: OpenAI API / LangChain
-- **解析**: tree-sitter (代码语法树)
-- **质量**: Black、isort (代码格式化)
-
-### 工具链层
-- **测试**: Cypress (E2E) + Jest (单元测试)
-- **CI/CD**: GitHub Actions + Docker
-- **部署**: Docker Compose + Kubernetes
 
 ## 📚 使用示例
-
-### 1. 模板生成
-```bash
-# 选择React管理后台模板 -> 配置项目参数 -> 生成代码包
-项目名: my-admin-system
-数据库: MySQL
-认证方式: JWT
-功能模块: 用户管理、权限控制、数据统计
-```
-
-### 2. AI定制
-```bash
-用户输入: "给用户列表页面添加分页功能，每页显示20条记录"
-
-AI解析生成:
-- 前端: 添加Pagination组件，修改列表查询逻辑
-- 后端: 接口添加page/pageSize参数，实现分页查询
-- 数据库: 优化查询语句，添加LIMIT和OFFSET
-```
-
-### 3. 质量检查
-```bash
-检查结果:
-✅ 语法正确性: 通过
-✅ 代码规范: 通过
-⚠️  性能问题: 发现N+1查询，建议使用JOIN
-⚠️  安全风险: SQL注入风险，建议使用参数化查询
-```
 
 ## 🤝 贡献指南
 

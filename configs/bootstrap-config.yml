@@ -1,0 +1,317 @@
+# CodeEvolve 自举系统配置
+# Bootstrap System Configuration
+
+bootstrap:
+  # 基础配置
+  enabled: true
+  version: "1.0.0"
+  safety_mode: strict  # strict, moderate, permissive
+  debug: false
+
+  # 核心保护配置
+  core_protection:
+    # 受保护的核心模块路径
+    protected_paths:
+      - "internal/bootstrap"
+      - "internal/auth"
+      - "internal/security"
+      - "cmd/api/main.go"
+      - "internal/middleware"
+      - "internal/database"
+
+    # 需要审核的文件
+    review_required:
+      - "go.mod"
+      - "go.sum"
+      - "package.json"
+      - "package-lock.json"
+      - "docker-compose.yml"
+      - "Dockerfile"
+      - ".env"
+      - "configs/"
+
+    # 可修改的扩展目录
+    extension_dirs:
+      - "internal/api/handler"
+      - "internal/service"
+      - "frontend/src/pages"
+      - "frontend/src/components"
+      - "frontend/src/services"
+      - "ai-service/api/endpoints"
+
+    # 配置文件
+    config_files:
+      - "configs/app.yml"
+      - "configs/database.yml"
+      - "configs/redis.yml"
+      - ".env.example"
+      - "frontend/.umirc.ts"
+
+    # 有权限修改核心模块的用户
+    allowed_users:
+      - "admin"
+      - "system"
+      - "bootstrap-service"
+
+    # 紧急联系人
+    emergency_contact: "admin@codeevolve.com"
+
+  # 修改规则
+  modification_rules:
+    # 单次修改最大文件数
+    max_files_per_change: 10
+
+    # 单个文件最大修改行数
+    max_lines_per_file: 500
+
+    # 是否要求所有修改都有测试
+    require_tests: true
+
+    # 修改失败时自动回滚
+    auto_rollback_on_failure: true
+
+    # 修改冷却期（秒）
+    cooldown_period: 300
+
+    # 并发修改限制
+    max_concurrent_modifications: 3
+
+  # 沙箱配置
+  sandbox:
+    # Docker镜像
+    docker_image: "codeevolve/sandbox:latest"
+
+    # 资源限制
+    memory_limit: "500MB"
+    cpu_limit: "0.5"
+
+    # 网络配置
+    network_disabled: true
+
+    # 执行超时（秒）
+    timeout_seconds: 300
+
+    # 工作目录
+    work_dir: "/workspace"
+
+    # 环境变量
+    environment:
+      TEST_MODE: "true"
+      NETWORK_DISABLED: "true"
+      GO_ENV: "test"
+      NODE_ENV: "test"
+
+  # 备份配置
+  backup:
+    # 备份目录
+    backup_dir: "./backups"
+
+    # 最大备份数量
+    max_backups: 50
+
+    # 自动备份间隔（小时）
+    auto_backup_interval: 24
+
+    # 备份压缩
+    compression_enabled: true
+
+    # 备份保留期（天）
+    retention_days: 30
+
+  # GitHub集成配置
+  github_integration:
+    # 自动标签
+    auto_labels:
+      - "auto-modify"
+      - "bootstrap-generated"
+
+    # 需要审核的标签
+    review_labels:
+      - "needs-review"
+      - "core-modification"
+      - "security-impact"
+
+    # PR自动合并条件
+    pr_auto_merge:
+      conditions:
+        # 所有测试必须通过
+        all_tests_pass: true
+
+        # 最大修改文件数
+        max_files_changed: 3
+
+        # 不能包含核心模块
+        no_core_modules: true
+
+        # 需要的审核数量
+        required_approvals: 0  # 小改动无需审核
+
+        # 安全风险等级
+        max_security_risk: "LOW"
+
+    # Issue模板
+    issue_templates:
+      - name: "feature_request"
+        title: "[feat] Feature Request Template"
+        labels: ["enhancement", "auto-modify"]
+
+      - name: "bug_report"
+        title: "[fix] Bug Report Template"
+        labels: ["bug", "auto-modify"]
+
+      - name: "optimization"
+        title: "[opt] Optimization Request"
+        labels: ["optimization", "auto-modify"]
+
+  # 安全配置
+  security:
+    # 恶意代码检测
+    malicious_code_detection:
+      enabled: true
+      patterns:
+        - name: "command_execution"
+          risk_level: "HIGH"
+        - name: "sql_injection"
+          risk_level: "HIGH"
+        - name: "file_system_access"
+          risk_level: "MEDIUM"
+        - name: "network_access"
+          risk_level: "MEDIUM"
+
+    # 访问控制
+    access_control:
+      # 启用基于角色的访问控制
+      rbac_enabled: true
+
+      # 角色定义
+      roles:
+        admin:
+          permissions:
+            - "core_module_modify"
+            - "emergency_rollback"
+            - "system_config"
+
+        developer:
+          permissions:
+            - "extension_modify"
+            - "config_modify"
+
+        viewer:
+          permissions:
+            - "read_only"
+
+    # 审计日志
+    audit_log:
+      enabled: true
+      log_file: "./logs/bootstrap-audit.log"
+      retention_days: 90
+
+      # 记录的事件类型
+      events:
+        - "modification_request"
+        - "sandbox_execution"
+        - "rollback_operation"
+        - "security_incident"
+
+  # 通知配置
+  notifications:
+    # 邮件通知
+    email:
+      enabled: true
+      smtp_host: "smtp.example.com"
+      smtp_port: 587
+      username: "bootstrap@codeevolve.com"
+
+      # 通知场景
+      scenarios:
+        security_incident: true
+        core_modification: true
+        rollback_executed: true
+
+    # Slack通知
+    slack:
+      enabled: false
+      webhook_url: ""
+      channel: "#codeevolve-alerts"
+
+  # 监控配置
+  monitoring:
+    # 性能监控
+    performance:
+      enabled: true
+      metrics_interval: 60  # 秒
+
+    # 健康检查
+    health_check:
+      enabled: true
+      check_interval: 30  # 秒
+
+      endpoints:
+        - name: "docker_daemon"
+          type: "docker"
+        - name: "git_repository"
+          type: "git"
+        - name: "file_system"
+          type: "filesystem"
+
+  # AI配置
+  ai:
+    # LLM提供商
+    provider: "openai"  # openai, anthropic, local
+
+    # API配置
+    api:
+      base_url: ""
+      api_key: "${OPENAI_API_KEY}"
+      model: "gpt-4"
+      max_tokens: 4000
+      temperature: 0.1
+
+    # 提示词配置
+    prompts:
+      # 需求分析提示词
+      requirement_analysis: |
+        请分析以下GitHub Issue，提取关键信息：
+
+        标题: {title}
+        内容: {body}
+
+        请返回JSON格式，包含：
+        - type: feat/fix/opt/refactor
+        - technical_requirements: 具体技术要求列表
+        - affected_files: 可能涉及的文件列表
+        - complexity: low/medium/high
+        - safety_level: safe/review/dangerous
+
+      # 代码生成提示词
+      code_generation: |
+        基于以下需求生成代码修改：
+
+        需求: {requirement}
+        文件: {file_path}
+        现有代码: {current_code}
+
+        请生成安全、高质量的代码修改。
+
+# 环境特定配置
+environments:
+  development:
+    bootstrap:
+      safety_mode: moderate
+      debug: true
+      sandbox:
+        timeout_seconds: 600
+
+  production:
+    bootstrap:
+      safety_mode: strict
+      debug: false
+      modification_rules:
+        require_tests: true
+        cooldown_period: 600
+
+  testing:
+    bootstrap:
+      safety_mode: permissive
+      sandbox:
+        timeout_seconds: 120

@@ -1,0 +1,358 @@
+# 代码分层保护配置
+# Layer Protection Configuration
+
+layers:
+  # 核心层 - 最高保护级别
+  core:
+    name: "Core Layer"
+    description: "Critical system components that require admin approval"
+    protection_level: "MAXIMUM"
+
+    paths:
+      - "internal/bootstrap/**"
+      - "internal/auth/**"
+      - "internal/security/**"
+      - "cmd/api/main.go"
+      - "internal/middleware/**"
+      - "internal/database/migration/**"
+      - "configs/bootstrap-config.yml"
+      - "configs/layer-protection.yml"
+
+    rules:
+      - require_admin_approval: true
+      - require_reason: true
+      - require_testing: true
+      - max_files_per_change: 3
+      - emergency_rollback: true
+      - audit_all_changes: true
+
+    allowed_users:
+      - "admin"
+      - "system"
+      - "security-team"
+
+    notifications:
+      - type: "email"
+        recipients: ["admin@codeevolve.com", "security@codeevolve.com"]
+      - type: "slack"
+        channel: "#security-alerts"
+
+  # 保护层 - 高保护级别
+  protected:
+    name: "Protected Layer"
+    description: "Important files that require justification"
+    protection_level: "HIGH"
+
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - "package.json"
+      - "package-lock.json"
+      - "docker-compose.yml"
+      - "Dockerfile*"
+      - ".env*"
+      - "configs/**"
+      - "internal/model/**"
+      - "internal/api/middleware/**"
+      - "frontend/public/**"
+
+    rules:
+      - require_reason: true
+      - require_testing: true
+      - max_files_per_change: 5
+      - peer_review_required: true
+      - auto_backup: true
+
+    allowed_roles:
+      - "admin"
+      - "senior-developer"
+      - "devops"
+
+    notifications:
+      - type: "email"
+        recipients: ["team-lead@codeevolve.com"]
+
+  # 扩展层 - 中等保护级别
+  extension:
+    name: "Extension Layer"
+    description: "Business logic and UI components"
+    protection_level: "MEDIUM"
+
+    paths:
+      - "internal/api/handler/**"
+      - "internal/service/**"
+      - "frontend/src/pages/**"
+      - "frontend/src/components/**"
+      - "frontend/src/services/**"
+      - "ai-service/api/endpoints/**"
+      - "ai-service/core/**"
+
+    rules:
+      - require_testing: true
+      - max_files_per_change: 10
+      - auto_tests_required: true
+      - code_review_optional: true
+
+    allowed_roles:
+      - "admin"
+      - "senior-developer"
+      - "developer"
+
+    auto_merge_conditions:
+      - all_tests_pass: true
+      - no_security_issues: true
+      - max_complexity: "medium"
+
+  # 配置层 - 特殊保护
+  config:
+    name: "Configuration Layer"
+    description: "Configuration files with special handling"
+    protection_level: "MEDIUM"
+
+    paths:
+      - "configs/app.yml"
+      - "configs/database.yml"
+      - "configs/redis.yml"
+      - ".env.example"
+      - "frontend/.umirc.ts"
+      - "ai-service/config/**"
+
+    rules:
+      - require_reason: true
+      - validate_syntax: true
+      - backup_before_change: true
+      - restart_services_after: true
+
+    validation:
+      - type: "yaml_syntax"
+        patterns: ["*.yml", "*.yaml"]
+      - type: "json_syntax"
+        patterns: ["*.json"]
+      - type: "env_format"
+        patterns: [".env*"]
+
+    post_change_actions:
+      - reload_config
+      - restart_affected_services
+      - validate_service_health
+
+  # 开放层 - 低保护级别
+  open:
+    name: "Open Layer"
+    description: "Documentation and non-critical files"
+    protection_level: "LOW"
+
+    paths:
+      - "docs/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "*.md"
+      - "frontend/src/assets/**"
+      - "ai-service/docs/**"
+      - "tests/**"
+      - "scripts/**"
+
+    rules:
+      - auto_merge: true
+      - require_testing: false
+      - max_files_per_change: 20
+
+    allowed_roles:
+      - "*"  # 所有用户
+
+# 全局规则
+global_rules:
+  # 文件大小限制
+  max_file_size: "10MB"
+
+  # 禁止的文件类型
+  forbidden_extensions:
+    - ".exe"
+    - ".dll"
+    - ".so"
+    - ".dylib"
+    - ".key"
+    - ".pem"
+    - ".p12"
+    - ".pfx"
+
+  # 敏感内容检测
+  sensitive_patterns:
+    - regex: "password\\s*=\\s*['\"][^'\"]{3,}['\"]"
+      message: "Potential hardcoded password detected"
+    - regex: "api[_-]?key\\s*=\\s*['\"][^'\"]{10,}['\"]"
+      message: "Potential API key detected"
+    - regex: "secret\\s*=\\s*['\"][^'\"]{10,}['\"]"
+      message: "Potential secret detected"
+    - regex: "token\\s*=\\s*['\"][^'\"]{20,}['\"]"
+      message: "Potential token detected"
+
+  # 代码质量要求
+  quality_gates:
+    - name: "no_console_log"
+      pattern: "console\\.log\\("
+      severity: "warning"
+      message: "Remove console.log statements before committing"
+
+    - name: "no_todo_fixme"
+      pattern: "(TODO|FIXME|XXX):"
+      severity: "info"
+      message: "Consider addressing TODO/FIXME comments"
+
+    - name: "no_debug_statements"
+      pattern: "(debugger|pdb\\.set_trace|fmt\\.Print)"
+      severity: "warning"
+      message: "Remove debug statements before committing"
+
+# 紧急模式配置
+emergency_mode:
+  # 触发条件
+  triggers:
+    - name: "security_breach"
+      description: "Detected security vulnerability"
+      auto_enable: true
+
+    - name: "system_failure"
+      description: "Critical system component failure"
+      auto_enable: true
+
+    - name: "manual_activation"
+      description: "Manually activated by admin"
+      auto_enable: false
+
+  # 紧急模式下的规则
+  rules:
+    - lock_core_modules: true
+    - require_admin_for_all: true
+    - auto_rollback_enabled: true
+    - enhanced_monitoring: true
+    - disable_auto_merge: true
+
+  # 恢复条件
+  recovery_conditions:
+    - admin_approval: true
+    - system_health_check: true
+    - security_scan_passed: true
+    - manual_verification: true
+
+  # 通知设置
+  notifications:
+    - type: "email"
+      priority: "urgent"
+      recipients: ["admin@codeevolve.com", "security@codeevolve.com"]
+
+    - type: "slack"
+      priority: "urgent"
+      channel: "#emergency-alerts"
+
+    - type: "sms"
+      priority: "critical"
+      recipients: ["+1234567890"]  # 紧急联系电话
+
+# 角色权限矩阵
+role_permissions:
+  admin:
+    layers: ["core", "protected", "extension", "config", "open"]
+    special_permissions:
+      - emergency_override
+      - system_configuration
+      - user_management
+      - audit_access
+
+  senior-developer:
+    layers: ["protected", "extension", "config", "open"]
+    special_permissions:
+      - peer_review
+      - release_management
+
+  developer:
+    layers: ["extension", "open"]
+    restrictions:
+      - max_daily_changes: 20
+      - require_review_for_large_changes: true
+
+  devops:
+    layers: ["protected", "config", "open"]
+    special_permissions:
+      - deployment_management
+      - infrastructure_changes
+
+  security-team:
+    layers: ["core", "protected", "extension", "config", "open"]
+    special_permissions:
+      - security_override
+      - audit_access
+      - incident_response
+
+  intern:
+    layers: ["open"]
+    restrictions:
+      - max_files_per_change: 3
+      - require_mentor_approval: true
+      - limited_hours: "09:00-17:00"
+
+# 监控和报警
+monitoring:
+  # 实时监控指标
+  metrics:
+    - name: "layer_violations"
+      description: "Number of layer protection violations"
+      threshold: 5
+      period: "1h"
+
+    - name: "failed_modifications"
+      description: "Failed modification attempts"
+      threshold: 10
+      period: "1h"
+
+    - name: "emergency_activations"
+      description: "Emergency mode activations"
+      threshold: 1
+      period: "24h"
+
+  # 报警规则
+  alerts:
+    - name: "core_modification_alert"
+      condition: "core_layer_modification AND !admin_user"
+      priority: "high"
+      action: "immediate_notification"
+
+    - name: "mass_modification_alert"
+      condition: "files_modified > 20 AND time_window < 10m"
+      priority: "medium"
+      action: "enhanced_review"
+
+    - name: "suspicious_pattern_alert"
+      condition: "sensitive_content_detected"
+      priority: "high"
+      action: "security_review"
+
+# 自动化响应
+automation:
+  # 自动修复
+  auto_remediation:
+    - trigger: "syntax_error"
+      action: "auto_format"
+      conditions: ["extension_layer", "safe_formatter"]
+
+    - trigger: "test_failure"
+      action: "rollback_change"
+      conditions: ["auto_rollback_enabled"]
+
+    - trigger: "security_violation"
+      action: "quarantine_change"
+      conditions: ["always"]
+
+  # 自动通知
+  auto_notifications:
+    - event: "core_modification"
+      recipients: ["security-team", "admin"]
+      method: ["email", "slack"]
+
+    - event: "protection_violation"
+      recipients: ["team-lead"]
+      method: ["email"]
+
+    - event: "emergency_mode"
+      recipients: ["all-admins"]
+      method: ["email", "slack", "sms"]
