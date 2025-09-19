@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: codeevolve-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: codeevolve
+      MYSQL_USER: codeevolve
+      MYSQL_PASSWORD: codeevolve123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/configs/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - codeevolve
+
+  # Redis 缓存
+  redis:
+    image: redis:6.0-alpine
+    container_name: codeevolve-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - codeevolve
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: codeevolve-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - codeevolve
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
+
+networks:
+  codeevolve:
+    driver: bridge

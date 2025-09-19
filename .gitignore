@@ -1,0 +1,10 @@
+.claude
+ai-service/.idea
+ai-service/__pycache__
+ai-service/*/__pycache__
+ai-service/venv
+*/.idea
+backend/go.sum
+backend/codeevolve-api
+frontend/package-lock.json
+frontend/node_modules
