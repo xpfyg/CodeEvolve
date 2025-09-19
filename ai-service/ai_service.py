@@ -23,7 +23,7 @@ class AIService:
         # 初始化OpenAI客户端
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if openai_api_key:
-            self.openai_client = openai.OpenAI(api_key=openai_api_key)
+            self.openai_client = openai.OpenAI(base_url=os.getenv("OPENAI_BASE_URL"),api_key=openai_api_key)
 
     async def generate_code_modifications(self,
                                          requirement: str,
@@ -133,7 +133,8 @@ FILE: 另一个文件路径
         """调用OpenAI API"""
         try:
             response = self.openai_client.chat.completions.create(
-                model="gpt-4",
+                # model="gpt-4",
+                model="doubao-seed-1-6-250615",
                 messages=[
                     {"role": "system", "content": "你是一个专业的代码生成助手。"},
                     {"role": "user", "content": prompt}

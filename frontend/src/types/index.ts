@@ -1,3 +1,67 @@
+// Code Generation Requests
+export interface CodeModificationRequest {
+  requirement: string;
+  repo_path: string;
+  target_files?: string[];
+  branch_name?: string;
+}
+
+export interface CodeModificationResponse {
+  success: boolean;
+  branch_name: string;
+  commit_hash?: string;
+  message: string;
+  modified_files?: string[];
+}
+
+// Code Analysis Requests
+export interface CodeAnalysisRequest {
+  repo_path: string;
+  file_path: string;
+}
+
+export interface CodeAnalysisResponse {
+  success: boolean;
+  analysis: {
+    complexity?: string;
+    maintainability?: string;
+    test_coverage?: string;
+    code_smells?: string[];
+    [key: string]: unknown;
+  };
+  suggestions?: string[];
+}
+
+// Test Generation Requests
+export interface TestGenerationRequest {
+  repo_path: string;
+  file_path: string;
+  test_file_path?: string;
+}
+
+export interface TestGenerationResponse {
+  success: boolean;
+  test_content: string;
+  test_file_path: string;
+}
+
+// Repository Management
+export interface RepositoryBranchesResponse {
+  branches: string[];
+}
+
+export interface RepositoryFilesResponse {
+  files: string[];
+}
+
+// Health Check Response
+export interface HealthResponse {
+  status: string;
+  service?: string;
+  timestamp?: string;
+}
+
+// Legacy Issue types for existing components
 export interface Issue {
   id: number;
   title: string;

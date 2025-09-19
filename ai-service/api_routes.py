@@ -18,7 +18,7 @@ class CodeAnalysisRequest(BaseModel):
     file_path: str = Field(..., description="要分析的文件相对路径", example="src/main.py")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "repo_path": "/path/to/project",
                 "file_path": "src/main.py"
@@ -31,7 +31,7 @@ class CodeAnalysisResponse(BaseModel):
     suggestions: List[str] = Field(default=[], description="改进建议列表")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "analysis": {
@@ -54,7 +54,7 @@ class TestGenerationRequest(BaseModel):
     test_file_path: Optional[str] = Field(None, description="测试文件输出路径", example="tests/test_utils.py")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "repo_path": "/path/to/project",
                 "file_path": "src/utils.py",
@@ -68,7 +68,7 @@ class TestGenerationResponse(BaseModel):
     test_file_path: str = Field(..., description="测试文件路径")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "test_content": "import unittest\nfrom src.utils import calculate\n\nclass TestCalculate(unittest.TestCase):\n    def test_addition(self):\n        self.assertEqual(calculate(2, 3, '+'), 5)",

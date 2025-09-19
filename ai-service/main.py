@@ -78,7 +78,7 @@ class CodeModificationRequest(BaseModel):
     branch_name: str = Field(None, description="可选，自定义分支名称", example="feature-user-auth")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "requirement": "添加用户认证功能，包括登录和注册接口",
                 "repo_path": "/path/to/your/project",
@@ -95,7 +95,7 @@ class CodeModificationResponse(BaseModel):
     modified_files: list[str] = Field(default=[], description="被修改的文件列表")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "branch_name": "feature-user-auth",
@@ -109,7 +109,7 @@ class RepositoryBranchesResponse(BaseModel):
     branches: list[str] = Field(..., description="仓库中的分支列表")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "branches": ["main", "develop", "feature-user-auth", "bugfix-login-issue"]
             }
@@ -119,7 +119,7 @@ class RepositoryFilesResponse(BaseModel):
     files: list[str] = Field(..., description="仓库中的文件列表")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "files": [
                     "src/main.py",

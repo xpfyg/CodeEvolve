@@ -26,8 +26,8 @@ class GitService:
             repo = git.Repo(repo_path)
 
             # 确保在main分支
-            repo.git.checkout('main')
-            repo.git.pull('origin', 'main')
+            # repo.git.checkout('main')
+            # repo.git.pull('origin', 'main')
 
             # 创建并切换到新分支
             new_branch = repo.create_head(branch_name)
